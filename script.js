@@ -1,70 +1,72 @@
-const universitiesContainer = document.getElementById("universities");
+// script.js
+
 const searchBtn = document.getElementById("searchBtn");
 const countryInput = document.getElementById("countryInput");
-const statusText = document.getElementById("status");
+const universitiesContainer = document.getElementById("universities");
+const status = document.getElementById("status");
 
-// HTTPS ishlatilmoqda!
-const API_URL = "https://universities.hipolabs.com/search";
+// Default country
+const defaultCountry = "Uzbekistan";
 
-document.addEventListener("DOMContentLoaded", () => {
-  fetchUniversities("Uzbekistan");
-});
+// Function to fetch universities from API
+async function fetchUniversities(country = defaultCountry) {
+  const query = country.trim();
 
-async function fetchUniversities(country) {
+  if (!query) {
+    status.textContent = "Please enter a country name!";
+    universitiesContainer.innerHTML = "";
+    return;
+  }
+
+  // Show loading message
+  status.textContent = "Loading...";
   universitiesContainer.innerHTML = "";
-  statusText.textContent = "Loading...";
 
   try {
-    const response = await fetch(`${API_URL}?country=${country}`);
-    
+    // API request
+    const response = await fetch(
+      `http://universities.hipolabs.com/search?country=${query}`
+    );
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     const data = await response.json();
 
     if (data.length === 0) {
-      statusText.textContent = "University not found";
+      status.textContent = `University not found for "${query}"`;
       return;
     }
 
-    statusText.textContent = "";
-    renderUniversities(data);
-
+    universitiesContainer.innerHTML = data.map((univ) => {
+        return `
+          <div class="card">
+            <h3>${univ.name}</h3>
+            <p><strong>Country:</strong> ${univ.country}</p>
+            <p><strong>Website:</strong> 
+              <a href="${univ.web_pages[0]}" target="_blank">${univ.web_pages[0]}</a>
+            </p>
+          </div>
+        `;
+      })
+      .join("");
   } catch (error) {
-    statusText.textContent = "Error loading data";
+    status.textContent = "Error fetching universities. Please try again later.";
     console.error("Fetch error:", error);
   }
 }
 
-function renderUniversities(universities) {
-  universitiesContainer.innerHTML = "";
+// Event listeners
+searchBtn.addEventListener("click", () =>
+  fetchUniversities(countryInput.value)
+);
+countryInput.addEventListener("keypress", (event) => {
+  if (event.key === "Enter") fetchUniversities(countryInput.value);
+});
 
-  universities.forEach(university => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    card.innerHTML = `
-      <h3>${university.name}</h3>
-      <p><strong>Country:</strong> ${university.country}</p>
-      <p>
-        <a href="${university.web_pages[0]}" target="_blank">
-          Visit Website
-        </a>
-      </p>
-    `;
-
-    universitiesContainer.appendChild(card);
-  });
-}
-
-searchBtn.addEventListener("click", () => {
-  const country = countryInput.value.trim();
-
-  if (country === "") {
-    alert("Please enter a country name");
-    return;
-  }
-
-  fetchUniversities(country);
+// Load default country on page load
+window.addEventListener("DOMContentLoaded", () => {
+  countryInput.value = defaultCountry;
+  fetchUniversities(defaultCountry);
 });
