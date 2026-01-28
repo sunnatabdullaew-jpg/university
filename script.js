@@ -3,7 +3,8 @@ const searchBtn = document.getElementById("searchBtn");
 const countryInput = document.getElementById("countryInput");
 const statusText = document.getElementById("status");
 
-const API_URL = "http://universities.hipolabs.com/search";
+// HTTPS ishlatilmoqda!
+const API_URL = "https://universities.hipolabs.com/search";
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchUniversities("Uzbekistan");
@@ -15,6 +16,11 @@ async function fetchUniversities(country) {
 
   try {
     const response = await fetch(`${API_URL}?country=${country}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
 
     if (data.length === 0) {
@@ -27,7 +33,7 @@ async function fetchUniversities(country) {
 
   } catch (error) {
     statusText.textContent = "Error loading data";
-    console.error(error);
+    console.error("Fetch error:", error);
   }
 }
 
