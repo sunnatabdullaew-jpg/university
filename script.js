@@ -29,7 +29,6 @@
 
         status.textContent = ""; 
 
-        // Universitetlarni chiqarish
         universitiesContainer.innerHTML = data.map(univ => `
           <div class="card">
             <h3>${univ.name}</h3>
